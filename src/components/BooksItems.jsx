@@ -2,16 +2,20 @@ import TablesData from "./TablesData"
 import PropTypes from 'prop-types'
 import BookContext from "../data/BooksData"
 import { useContext } from "react"
+import Spinner from "./shared/Spinner"
 
 
 
 function BooksItems() {
 
-  const {bookLists} = useContext(BookContext)
+  const { bookLists, isLoading } = useContext(BookContext)
 
 
-  if(!bookLists || bookLists.length === 0){
+  if(!isLoading && (!bookLists || bookLists.length === 0)){
     return <p>No book added yet</p>
+  }
+  if(isLoading){
+    return<p><Spinner /></p>
   }
   return (
     <div className='input-collection-table'>

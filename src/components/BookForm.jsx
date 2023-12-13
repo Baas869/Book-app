@@ -10,6 +10,7 @@ function BookForm() {
         if(editBookitems.edit === true){
             setBookItems(editBookitems.books)
             setIsbnDisabled(true)
+            setBtnDisabled(false)
             setTextCondition('ISBN can\'t be modify')            
         }
     }, [editBookitems])

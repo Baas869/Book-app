@@ -1,46 +1,47 @@
-import {v4 as uuidv4} from 'uuid'
-import { createContext, useState } from "react";
+// import {v4 as uuidv4} from 'uuid'
+import { createContext, useState, useEffect } from "react";
 
 
 const BookContext = createContext()
 
 export const BookContextProvider = ({ children }) => {
 
-    const [bookLists, setBookLists] = useState([
-        {
-            id: 1, 
-            title: 'Go back home', 
-            author: 'Shakto Baas', 
-            isbn: 8696
-        },
-        {
-            id: 2, 
-            title: 'No place like home', 
-            author: 'Adeola', 
-            isbn: 1932
-        },
-        {
-            id: 3, 
-            title: 'Welcome back home', 
-            author: 'Omowumi', 
-            isbn: 4334
-        }
-    ]
-    )
+    const [bookLists, setBookLists] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
     const [editBookitems, setEditBookItems] = useState({
         books: {},
         edit: false
     })
 
-    const deleteBook = (id) =>{
+    useEffect(() =>{
+        fetchBooksData()
+    }, [])
+
+    const fetchBooksData = async () =>{
+        const response = await fetch('/booksfeedback?_sort=id&_order=desc')
+        const data = await response.json()
+
+        setBookLists(data)
+        setIsLoading(false)
+    }
+    const deleteBook = async (id) =>{
         if(window.confirm('Are you sure, you want to delete book')){
+            await fetch(`/booksfeedback/${id}`, {method: 'DELETE'})
             setBookLists(bookLists.filter((book) => book.id !== id))
         }
    }
 
-   const addBooks = (newBooks) =>{
-    newBooks.id = uuidv4()
-    setBookLists([newBooks, ...bookLists])
+   const addBooks = async (newBooks) =>{
+    const response = await fetch('/booksfeedback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newBooks)
+    })
+    const data = await response.json()
+
+    setBookLists([data, ...bookLists])
 }
 const editBook = (books) =>{
     setEditBookItems({
@@ -48,15 +49,24 @@ const editBook = (books) =>{
         edit: true
     })
 }
-    const updateEditBook = (id, updateBooks) => {
-        setBookLists(bookLists.map((book) => book.id === id ? {...book, ...updateBooks} : book))
+    const updateEditBook = async (id, updateBooks) => {
+        const response = await fetch(`/booksfeedback/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateBooks)
+        })
+        const data = await response.json()
+        setBookLists(bookLists.map((book) => book.id === id ? {...book, ...data} : book))
     }
 
     return <BookContext.Provider value={{bookLists,
+        editBookitems,
+        isLoading,
         deleteBook,
         addBooks,
         editBook,
-        editBookitems,
         updateEditBook,
         setEditBookItems
     
